@@ -21,14 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class ConversationLogic : BaseLogic, IConversationLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ConversationLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public ConversationLogic(string apiKey)
-            : base(apiKey)
+
+        public ConversationLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -54,14 +49,7 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<IEnumerable<Conversation>> GetAllAsync(ConversationRequest request = null)
         {
-            using (var client = this.CreateMailClient("conversations"))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var conversationResponse = await response.Content.ReadAsAsync<ConversationResponse>().ConfigureAwait(false);
-                return conversationResponse.Conversations;
-            }
+            return (await this.GetResponseAsync(request).ConfigureAwait(false))?.Conversations;
         }
 
         /// <summary>

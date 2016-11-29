@@ -21,14 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class AutomationLogic : BaseLogic, IAutomationLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AutomationLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public AutomationLogic(string apiKey)
-            : base(apiKey)
+
+        public AutomationLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -54,13 +49,7 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<IEnumerable<Automation>> GetAllAsync(QueryableBaseRequest request = null)
         {
-            using (var client = this.CreateMailClient("automations"))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-                var automationResponse = await response.Content.ReadAsAsync<AutomationResponse>().ConfigureAwait(false);
-                return automationResponse.Automations;
-            }
+            return (await this.GetResponseAsync(request).ConfigureAwait(false))?.Automations;
         }
 
 
@@ -86,6 +75,11 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<AutomationResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient("automations"))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

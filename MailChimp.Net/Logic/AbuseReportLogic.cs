@@ -21,13 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     public class AbuseReportLogic : BaseLogic, IAbuseReportLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AbuseReportLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public AbuseReportLogic(string apiKey) : base(apiKey)
+
+        public AbuseReportLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -56,14 +52,7 @@ namespace MailChimp.Net.Logic
         /// </exception>
         public async Task<IEnumerable<AbuseReport>> GetAllAsync(string listId, QueryableBaseRequest request = null)
         {
-            using (var client = this.CreateMailClient("lists/"))
-            {
-                var response = await client.GetAsync($"{listId}/abuse-reports{request?.ToQueryString()}").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var appResponse = await response.Content.ReadAsAsync<AbuseReportResponse>().ConfigureAwait(false);
-                return appResponse.AbuseReports;
-            }
+            return (await GetResponseAsync(listId, request).ConfigureAwait(false))?.AbuseReports;
         }
 
 
@@ -92,6 +81,12 @@ namespace MailChimp.Net.Logic
         /// </exception>
         public async Task<AbuseReportResponse> GetResponseAsync(string listId, QueryableBaseRequest request = null)
         {
+
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient("lists/"))
             {
                 var response = await client.GetAsync($"{listId}/abuse-reports{request?.ToQueryString()}").ConfigureAwait(false);

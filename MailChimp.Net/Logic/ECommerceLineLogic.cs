@@ -15,10 +15,10 @@ namespace MailChimp.Net.Logic
             get { return $"ecommerce/stores/{this.StoreId}/{this.Resource}/{this.ResourceId}/lines"; }
         }
 
-        internal ECommerceLineLogic(string apiKey) : base(apiKey)
+        public ECommerceLineLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
-
 
         public async Task<Line> AddAsync(Line line)
         {
@@ -88,6 +88,12 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<CartLineResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = CreateMailClient(BaseUrl))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

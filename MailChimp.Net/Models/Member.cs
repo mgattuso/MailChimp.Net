@@ -19,9 +19,11 @@ namespace MailChimp.Net.Models
 	{
         public Member()
         {
-            this.MergeFields = new Dictionary<string, string>();
+            this.MergeFields = new Dictionary<string, object>();
             this.Links = new List<Link>();
             this.Interests = new Dictionary<string, bool>();
+            this.Status = Status.Pending;
+            this.StatusIfNew = Status.Pending;            
         }
 
 		/// <summary>
@@ -106,7 +108,7 @@ namespace MailChimp.Net.Models
 		/// Gets or sets the merge fields.
 		/// </summary>
 		[JsonProperty("merge_fields")]
-		public Dictionary<string, string> MergeFields { get; set; }
+		public Dictionary<string, object> MergeFields { get; set; }
 
 		/// <summary>
 		/// Gets or sets the last Note.
@@ -120,15 +122,16 @@ namespace MailChimp.Net.Models
 		[JsonProperty("stats")]
 		public MemberStats Stats { get; set; }
 
-		/// <summary>
-		/// Gets or sets the status.
-		/// </summary>
+        /// <summary>
+        /// Sets the members status unless they are new.  Then you need to use the <see cref="StatusIfNew"/> property.  Default value is <see cref="Status.Pending"/>  
+        /// </summary>
 		[JsonProperty("status")]
 		[JsonConverter(typeof(StringEnumDescriptionConverter))]
 		public Status Status { get; set; }
 
         [JsonProperty("status_if_new")]
  		[JsonConverter(typeof(StringEnumDescriptionConverter))]
+        /// Sets the members new status.  To update the status of a member use the <see cref="Status"/> property.  Default value is <see cref="Status.Pending"/>  
  		public Status StatusIfNew { get; set; }
 
         /// <summary>

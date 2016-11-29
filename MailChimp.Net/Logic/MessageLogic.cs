@@ -22,14 +22,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class MessageLogic : BaseLogic, IMessageLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MessageLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public MessageLogic(string apiKey)
-            : base(apiKey)
+
+        public MessageLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -70,14 +65,7 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<IEnumerable<Message>> GetAllAsync(string conversationId, MessageRequest request = null)
         {
-            using (var client = this.CreateMailClient($"conversations/{request?.ToQueryString()}"))
-            {
-                var response = await client.GetAsync($"{conversationId}/messages");
-                await response.EnsureSuccessMailChimpAsync();
-
-                var listResponse = await response.Content.ReadAsAsync<MessageResponse>();
-                return listResponse.Messages;
-            }
+            return (await GetResponseAsync(conversationId, request).ConfigureAwait(false))?.Messages;
         }
 
         /// <summary>
@@ -94,6 +82,7 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<MessageResponse> GetResponseAsync(string conversationId, MessageRequest request = null)
         {
+            
             using (var client = this.CreateMailClient($"conversations/{request?.ToQueryString()}"))
             {
                 var response = await client.GetAsync($"{conversationId}/messages");

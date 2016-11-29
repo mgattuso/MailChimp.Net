@@ -27,14 +27,8 @@ namespace MailChimp.Net.Logic
     {
         private const string BaseUrl = "lists";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MemberLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public MemberLogic(string apiKey)
-            : base(apiKey)
+        public MemberLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -204,14 +198,7 @@ namespace MailChimp.Net.Logic
         /// <exception cref="ArgumentOutOfRangeException">Enlarging the value of this instance would exceed <see cref="P:System.Text.StringBuilder.MaxCapacity" />. </exception>
         public async Task<IEnumerable<Member>> GetAllAsync(string listId, MemberRequest memberRequest = null)
         {
-            using (var client = this.CreateMailClient($"{BaseUrl}/"))
-            {
-                var response = await client.GetAsync($"{listId}/members{memberRequest?.ToQueryString()}").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var listResponse = await response.Content.ReadAsAsync<MemberResponse>().ConfigureAwait(false);
-                return listResponse.Members;
-            }
+            return (await GetResponseAsync(listId, memberRequest).ConfigureAwait(false))?.Members;
         }
 
         /// <exception cref="ArgumentNullException"><paramref>
@@ -228,6 +215,11 @@ namespace MailChimp.Net.Logic
         /// <exception cref="ArgumentOutOfRangeException">Enlarging the value of this instance would exceed <see cref="P:System.Text.StringBuilder.MaxCapacity" />. </exception>
         public async Task<MemberResponse> GetResponseAsync(string listId, MemberRequest memberRequest = null)
         {
+            memberRequest = memberRequest ?? new MemberRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient($"{BaseUrl}/"))
             {
                 var response = await client.GetAsync($"{listId}/members{memberRequest?.ToQueryString()}").ConfigureAwait(false);
@@ -331,13 +323,19 @@ namespace MailChimp.Net.Logic
         /// <returns>
         /// The <see cref="Task"/>.
         /// </returns>
-        public async Task<bool> ExistsAsync(string listId, string emailAddress, BaseRequest request = null)
+        public async Task<bool> ExistsAsync(string listId, string emailAddress, BaseRequest request = null, bool falseIfUnsubscribed = true)
         {
             using (var client = this.CreateMailClient($"{BaseUrl}/"))
             {
                 var response = await client.GetAsync($"{listId}/members/{this.Hash(emailAddress.ToLower())}{request?.ToQueryString()}").ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
+                    if (falseIfUnsubscribed)
+                    {
+                        var member = await response.Content.ReadAsAsync<Member>().ConfigureAwait(false);
+                        return member.Status != Status.Unsubscribed;
+                    }
+
                     return true;
                 }
 

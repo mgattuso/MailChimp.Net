@@ -25,11 +25,10 @@ namespace MailChimp.Net.Logic
 
         private const string BaseUrl = "campaign-folders";
 
-        public CampaignFolderLogic(string apiKey)
-            : base(apiKey)
+        public CampaignFolderLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
-
 
         public async Task<Folder> AddAsync(string name)
         {
@@ -46,18 +45,16 @@ namespace MailChimp.Net.Logic
 
         public async Task<IEnumerable<Folder>> GetAllAsync(QueryableBaseRequest request = null)
         {
-            using (var client = this.CreateMailClient(BaseUrl))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var campaignFolderResponse = await response.Content.ReadAsAsync<CampaignFolderResponse>().ConfigureAwait(false);
-                return campaignFolderResponse.Folders;
-            }
+            return (await this.GetResponseAsync(request).ConfigureAwait(false))?.Folders;
         }
 
         public async Task<CampaignFolderResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+            request = request ?? new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient(BaseUrl))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

@@ -22,14 +22,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class TemplateFolderLogic : BaseLogic, ITemplateFolderLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="TemplateFolderLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public TemplateFolderLogic(string apiKey)
-            : base(apiKey)
+
+        public TemplateFolderLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -115,14 +110,7 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<IEnumerable<Folder>> GetAllAsync(QueryableBaseRequest request = null)
         {
-            using (var client = this.CreateMailClient("template-folders"))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var templateResponse = await response.Content.ReadAsAsync<TemplateFolderResponse>().ConfigureAwait(false);
-                return templateResponse.Folders;
-            }
+            return (await GetResponseAsync(request).ConfigureAwait(false))?.Folders;
         }
 
         /// <summary>
@@ -147,6 +135,11 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<TemplateFolderResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient("template-folders"))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

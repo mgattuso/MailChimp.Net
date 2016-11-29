@@ -30,7 +30,7 @@ namespace MailChimp.Net.Models
         NotCompleted,
         [Description("member")]
         Member,
-        [Description("not_member")]
+        [Description("notmember")]
         NonMember,
         [Description("greater")]
         Greater,
@@ -101,7 +101,10 @@ namespace MailChimp.Net.Models
         [Description("interestcontainsall")]
         InterestContainsAll,
         [Description("interestnotcontains")]
-        InterestNotContains
-
+        InterestNotContains,
+        [Description("date_within")]
+        DateWithin,
+        [Description("within")]
+        Within
     }
 }

@@ -20,13 +20,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     public class ActivityLogic : BaseLogic, IActivityLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ActivityLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public ActivityLogic(string apiKey) : base(apiKey)
+
+        public ActivityLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -47,14 +43,7 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<IEnumerable<Activity>> GetAllAsync(string listId, BaseRequest request = null)
         {
-            using (var client = this.CreateMailClient("lists/"))
-            {
-                var response = await client.GetAsync($"{listId}/activity{request?.ToQueryString()}").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var appResponse = await response.Content.ReadAsAsync<ActivityResponse>().ConfigureAwait(false);
-                return appResponse.Activities;
-            }
+            return (await GetResponseAsync(listId, request).ConfigureAwait(false))?.Activities;
         }
 
         /// <summary>

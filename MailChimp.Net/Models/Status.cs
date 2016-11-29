@@ -13,9 +13,6 @@ namespace MailChimp.Net.Models
     /// </summary>
     public enum Status
     {
-
-        [Description("")]
-        None,
         /// <summary>
         /// The subscribed.
         /// </summary>
@@ -38,6 +35,17 @@ namespace MailChimp.Net.Models
         /// The pending.
         /// </summary>
         [Description("pending")]
-        Pending
+        Pending,
+
+
+        [Description("transactional")]
+        Transactional,
+        
+        /// <summary>
+        /// The undefined.
+        /// </summary>
+        [Description("")]
+        Undefined
+
     }
 }

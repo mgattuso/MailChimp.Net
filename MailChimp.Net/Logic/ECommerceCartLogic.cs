@@ -22,8 +22,8 @@ namespace MailChimp.Net.Logic
         /// </summary>
         private const string BaseUrl = "ecommerce/stores/{0}/carts";
 
-        public ECommerceCartLogic(string apiKey)
-            : base(apiKey)
+        public ECommerceCartLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -50,7 +50,7 @@ namespace MailChimp.Net.Logic
 
         public IECommerceLineLogic Lines(string cartId)
         {
-            _cartLogic = _cartLogic ?? new ECommerceLineLogic(this._apiKey);
+            _cartLogic = _cartLogic ?? new ECommerceLineLogic(base._mailChimpConfiguration);
             _cartLogic.Resource = "carts";
             _cartLogic.ResourceId = cartId;
             _cartLogic.StoreId = this.StoreId;
@@ -84,7 +84,7 @@ namespace MailChimp.Net.Logic
         /// <returns></returns>
         public async Task<IEnumerable<Cart>> GetAllAsync(QueryableBaseRequest request = null)
         {
-            return (await GetResponseAsync(request).ConfigureAwait(false))?.Carts;
+            return (await this.GetResponseAsync(request).ConfigureAwait(false))?.Carts;
         }
 
         /// <summary>
@@ -124,6 +124,12 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<CartResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             var requestUrl = string.Format(BaseUrl, StoreId);
             using (var client = CreateMailClient(requestUrl))
             {

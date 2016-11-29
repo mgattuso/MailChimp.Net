@@ -21,14 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     public class GrowthHistoryLogic : BaseLogic, IGrowthHistoryLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="GrowthHistoryLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public GrowthHistoryLogic(string apiKey)
-            : base(apiKey)
+
+        public GrowthHistoryLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -57,15 +52,7 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<IEnumerable<History>> GetAllAsync(string listId, QueryableBaseRequest request = null)
         {
-            using (var client = this.CreateMailClient("lists/"))
-            {
-                var response =
-                    await client.GetAsync($"{listId}/growth-history{request?.ToQueryString()}").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var appResponse = await response.Content.ReadAsAsync<GrowthHistoryResponse>().ConfigureAwait(false);
-                return appResponse.History;
-            }
+            return (await GetResponseAsync(listId, request).ConfigureAwait(false))?.History;
         }
 
 
@@ -94,6 +81,11 @@ namespace MailChimp.Net.Logic
         /// <exception cref="TypeLoadException">A custom attribute type cannot be loaded. </exception>
         public async Task<GrowthHistoryResponse> GetResponseAsync(string listId, QueryableBaseRequest request = null)
         {
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient("lists/"))
             {
                 var response =

@@ -3,6 +3,10 @@
 //   N/A
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
+
+using System.Diagnostics;
+using System.Linq.Expressions;
+
 namespace MailChimp.Net.Interfaces
 {
     /// <summary>
@@ -10,6 +14,10 @@ namespace MailChimp.Net.Interfaces
     /// </summary>
     public interface IMailChimpManager
     {
+        int Limit { get; }
+
+        IMailChimpManager Configure(IMailChimpConfiguration config);
+
         /// <summary>
         /// Gets the api.
         /// </summary>

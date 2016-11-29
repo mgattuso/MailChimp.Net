@@ -27,13 +27,8 @@ namespace MailChimp.Net.Logic
         /// </summary>
         private const string BaseUrl = "/lists/{0}/webhooks";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="WebHookLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public WebHookLogic(string apiKey) : base(apiKey)
+        public WebHookLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -43,14 +38,17 @@ namespace MailChimp.Net.Logic
         /// <param name="listId">
         /// The list id.
         /// </param>
+        /// <param name="webhook">
+        /// Webhook.
+        /// </param>
         /// <returns>
         /// The <see cref="Task"/>.
         /// </returns>
-        public async Task<WebHook> AddAsync(string listId)
+        public async Task<WebHook> AddAsync(string listId, WebHook webhook)
         {
             using (var client = this.CreateMailClient(string.Format(BaseUrl, listId)))
             {
-                var response = await client.PostAsync(string.Empty, null).ConfigureAwait(false);
+                var response = await client.PostAsJsonAsync(string.Empty, webhook).ConfigureAwait(false);
                 await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
 
                 var webHookResponse = await response.Content.ReadAsAsync<WebHook>().ConfigureAwait(false);
@@ -90,7 +88,7 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<IEnumerable<WebHook>> GetAllAsync(string listId)
         {
-            return (await this.GetResponseAsync(listId))?.Webhooks;
+            return (await this.GetResponseAsync(listId).ConfigureAwait(false))?.Webhooks;
         }
 
         /// <summary>

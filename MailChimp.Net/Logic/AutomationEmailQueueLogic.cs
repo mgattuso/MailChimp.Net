@@ -21,14 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class AutomationEmailQueueLogic : BaseLogic, IAutomationEmailQueueLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="AutomationEmailQueueLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public AutomationEmailQueueLogic(string apiKey)
-            : base(apiKey)
+
+        public AutomationEmailQueueLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -91,13 +86,7 @@ namespace MailChimp.Net.Logic
         /// </exception>
         public async Task<IEnumerable<Queue>> GetAllAsync(string workflowId, string workflowEmailId)
         {
-            using (var client = this.CreateMailClient("automations/"))
-            {
-                var response = await client.GetAsync($"{workflowId}/emails/{workflowEmailId}/queue").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-                var automationResponse = await response.Content.ReadAsAsync<AutomationEmailQueueResponse>().ConfigureAwait(false);
-                return automationResponse.Queues;
-            }
+            return (await GetResponseAsync(workflowId, workflowEmailId).ConfigureAwait(false))?.Queues;            
         }
 
         /// <summary>

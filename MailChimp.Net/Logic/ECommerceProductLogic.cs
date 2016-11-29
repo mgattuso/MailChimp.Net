@@ -24,14 +24,14 @@ namespace MailChimp.Net.Logic
 
         private static IECommerceProductVarianceLogic _productVarianceLogic;
 
-        public ECommerceProductLogic(string apiKey)
-            : base(apiKey)
+        public ECommerceProductLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
         public IECommerceProductVarianceLogic Variances(string productId)
         {
-            _productVarianceLogic = _productVarianceLogic ?? new ECommerceProductVarianceLogic(this._apiKey);
+            _productVarianceLogic = _productVarianceLogic ?? new ECommerceProductVarianceLogic(this._mailChimpConfiguration);
             _productVarianceLogic.StoreId = this.StoreId;
             _productVarianceLogic.ProductId = productId;
             return _productVarianceLogic;
@@ -115,6 +115,11 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<StoreProductResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             var requestUrl = string.Format(BaseUrl, StoreId);
             using (var client = CreateMailClient(requestUrl))
             {

@@ -21,14 +21,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     public class InterestCategoryLogic : BaseLogic, IInterestCategoryLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InterestCategoryLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public InterestCategoryLogic(string apiKey)
-            : base(apiKey)
+
+        public InterestCategoryLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -123,14 +118,7 @@ namespace MailChimp.Net.Logic
             string listId,
             InterestCategoryRequest request = null)
         {
-            using (var client = this.CreateMailClient($"lists/{listId}/interest-categories"))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var listResponse = await response.Content.ReadAsAsync<InterestCategoryResponse>().ConfigureAwait(false);
-                return listResponse.Categories;
-            }
+            return (await GetResponseAsync(listId, request).ConfigureAwait(false))?.Categories;
         }
 
         /// <summary>
@@ -160,6 +148,11 @@ namespace MailChimp.Net.Logic
             string listId,
             InterestCategoryRequest request = null)
         {
+            request = request ?? new InterestCategoryRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient($"lists/{listId}/interest-categories"))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

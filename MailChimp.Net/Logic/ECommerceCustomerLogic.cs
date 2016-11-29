@@ -23,12 +23,8 @@ namespace MailChimp.Net.Logic
         private const string BaseUrl = "ecommerce/stores/{0}/customers";
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="apiKey"></param>
-        public ECommerceCustomerLogic(string apiKey)
-            : base(apiKey)
+        public ECommerceCustomerLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -117,6 +113,12 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<StoreCustomerResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             var requestUrl = string.Format(BaseUrl, StoreId);
             using (var client = CreateMailClient(requestUrl))
             {

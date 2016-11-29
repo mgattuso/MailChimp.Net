@@ -25,14 +25,9 @@ namespace MailChimp.Net.Logic
         /// </summary>
         private const string BaseUrl = "/lists/{0}/merge-fields";
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MergeFieldLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public MergeFieldLogic(string apiKey)
-            : base(apiKey)
+
+        public MergeFieldLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -92,14 +87,7 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<IEnumerable<MergeField>> GetAllAsync(string listId, MergeFieldRequest request = null)
         {
-            using (var client = this.CreateMailClient(string.Format(BaseUrl, listId)))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var mergeResponse = await response.Content.ReadAsAsync<MergeFieldResponse>().ConfigureAwait(false);
-                return mergeResponse.MergeFields;
-            }
+            return (await GetResponseAsync(listId, request).ConfigureAwait(false))?.MergeFields;
         }
 
         /// <summary>
@@ -138,6 +126,11 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<MergeFieldResponse> GetResponseAsync(string listId, MergeFieldRequest request = null)
         {
+            request = request ?? new MergeFieldRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient(string.Format(BaseUrl, listId)))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

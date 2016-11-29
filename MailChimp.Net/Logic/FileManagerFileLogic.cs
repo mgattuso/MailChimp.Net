@@ -24,8 +24,8 @@ namespace MailChimp.Net.Logic
 
         private const string BaseUrl = "file-manager/files";
 
-        public FileManagerFileLogic(string apiKey)
-            : base(apiKey)
+        public FileManagerFileLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 
@@ -85,18 +85,16 @@ namespace MailChimp.Net.Logic
 
         public async Task<IEnumerable<FileManagerFile>> GetAllAsync(FileManagerRequest request = null)
         {
-            using (var client = this.CreateMailClient(BaseUrl))
-            {
-                var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-
-                var fileManagerFileResponse = await response.Content.ReadAsAsync<FileManagerFileResponse>().ConfigureAwait(false);
-                return fileManagerFileResponse.Files;
-            }
+            return (await GetResponseAsync(request).ConfigureAwait(false))?.Files;
         }
 
         public async Task<FileManagerFileResponse> GetResponseAsync(FileManagerRequest request = null)
         {
+            request = request ?? new FileManagerRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = this.CreateMailClient(BaseUrl))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

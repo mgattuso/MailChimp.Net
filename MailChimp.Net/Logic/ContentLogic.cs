@@ -20,14 +20,9 @@ namespace MailChimp.Net.Logic
     /// </summary>
     internal class ContentLogic : BaseLogic, IContentLogic
     {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContentLogic"/> class.
-        /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public ContentLogic(string apiKey)
-            : base(apiKey)
+
+        public ContentLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
 

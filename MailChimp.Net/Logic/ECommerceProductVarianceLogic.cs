@@ -14,10 +14,10 @@ namespace MailChimp.Net.Logic
 
         public string ProductId { get; set; }
 
-        internal ECommerceProductVarianceLogic(string apiKey) : base(apiKey)
+        public ECommerceProductVarianceLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
         {
         }
-
 
         public async Task<Variant> AddAsync(Variant variant)
         {
@@ -87,6 +87,12 @@ namespace MailChimp.Net.Logic
         /// </returns>
         public async Task<ProductVariantResponse> GetResponseAsync(QueryableBaseRequest request = null)
         {
+
+            request = new QueryableBaseRequest
+            {
+                Limit = base._limit
+            };
+
             using (var client = CreateMailClient(BaseUrl))
             {
                 var response = await client.GetAsync(request?.ToQueryString()).ConfigureAwait(false);

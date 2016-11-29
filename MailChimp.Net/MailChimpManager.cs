@@ -4,9 +4,11 @@
 // </copyright>
 // --------------------------------------------------------------------------------------------------------------------
 
+using System;
 using MailChimp.Net.Core;
 using MailChimp.Net.Interfaces;
 using MailChimp.Net.Logic;
+using System.Linq;
 
 // ReSharper disable CommentTypo
 // ReSharper disable IdentifierTypo
@@ -18,82 +20,74 @@ namespace MailChimp.Net
     public class MailChimpManager : MailManagerBase, IMailChimpManager
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="MailChimpManager"/> class.
+        /// Sets the limit on all GetAllAsync responses with QueryableBaseRequest
         /// </summary>
-        /// <param name="apiKey">
-        /// The api key.
-        /// </param>
-        public MailChimpManager(string apiKey) : base(apiKey)
+        /// <param name="limit"></param>
+        /// <returns></returns>
+        public IMailChimpManager Configure(IMailChimpConfiguration config)
         {
-            this.Activities = new ActivityLogic(ApiKey);
-            this.AbuseReports = new AbuseReportLogic(ApiKey);
-            this.Api = new ApiLogic(ApiKey);
-            this.Apps = new AuthorizedAppLogic(ApiKey);
-            this.AutomationEmails = new AutomationEmailLogic(ApiKey);
-            this.AutomationEmailQueues = new AutomationEmailQueueLogic(ApiKey);
-            this.Automations = new AutomationLogic(ApiKey);
-            this.AutomationSubscribers = new AutomationSubscriberLogic(ApiKey);
-            this.Batches = new BatchLogic(ApiKey);
-            this.Campaigns = new CampaignLogic(ApiKey);
-            this.CampaignFolders = new CampaignFolderLogic(ApiKey);
-            this.Clients = new ClientLogic(ApiKey);
-            this.Content = new ContentLogic(ApiKey);
-            this.Conversations = new ConversationLogic(ApiKey);
-            this.ECommerceStores = new ECommerceLogic(ApiKey);
-            this.Feedback = new FeedBackLogic(ApiKey);
-            this.FileManagerFiles = new FileManagerFileLogic(ApiKey);
-            this.FileManagerFolders = new FileManagerFolderLogic(ApiKey);
-            this.GrowthHistories = new GrowthHistoryLogic(ApiKey);
-            this.InterestCategories = new InterestCategoryLogic(ApiKey);
-            this.Interests = new InterestLogic(ApiKey);
-            this.Lists = new ListLogic(ApiKey);
-            this.ListSegments = new ListSegmentLogic(ApiKey);
-            this.Members = new MemberLogic(ApiKey);
-            this.MergeFields = new MergeFieldLogic(ApiKey);
-            this.Messages = new MessageLogic(ApiKey);
-            this.Notes = new NoteLogic(ApiKey);
-            this.Reports = new ReportLogic(ApiKey);
-            this.TemplateFolders = new TemplateFolderLogic(ApiKey);
-            this.Templates = new TemplateLogic(ApiKey);
-            this.WebHooks = new WebHookLogic(ApiKey);
+            typeof(MailChimpManager).GetProperties().Select(x => x.GetValue(this)).OfType<BaseLogic>().ToList().ForEach(x => x._mailChimpConfiguration = config);
+            return this;
+        }
+
+        public static IMailChimpManager Create(IMailChimpConfiguration config)
+        {
+            var mailChimpManager = (new MailChimpManager()).Configure(config);
+            return mailChimpManager;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MailChimpManager"/> class.
         /// </summary>
-        public MailChimpManager()
+        /// <param name="apiKey">
+        /// The api key.
+        /// </param>
+        public MailChimpManager(string apiKey) : this(new MailChimpConfiguration { ApiKey = apiKey })
         {
-            this.Activities = new ActivityLogic(ApiKey);
-            this.AbuseReports = new AbuseReportLogic(ApiKey);
-            this.Api = new ApiLogic(ApiKey);
-            this.Apps = new AuthorizedAppLogic(ApiKey);
-            this.AutomationEmails = new AutomationEmailLogic(ApiKey);
-            this.AutomationEmailQueues = new AutomationEmailQueueLogic(ApiKey);
-            this.Automations = new AutomationLogic(ApiKey);
-            this.AutomationSubscribers = new AutomationSubscriberLogic(ApiKey);
-            this.Batches = new BatchLogic(ApiKey);
-            this.Campaigns = new CampaignLogic(ApiKey);
-            this.CampaignFolders = new CampaignFolderLogic(ApiKey);
-            this.Clients = new ClientLogic(ApiKey);
-            this.Content = new ContentLogic(ApiKey);
-            this.Conversations = new ConversationLogic(ApiKey);
-            this.ECommerceStores = new ECommerceLogic(ApiKey);
-            this.Feedback = new FeedBackLogic(ApiKey);
-            this.FileManagerFiles = new FileManagerFileLogic(ApiKey);
-            this.FileManagerFolders = new FileManagerFolderLogic(ApiKey);
-            this.GrowthHistories = new GrowthHistoryLogic(ApiKey);
-            this.InterestCategories = new InterestCategoryLogic(ApiKey);
-            this.Interests = new InterestLogic(ApiKey);
-            this.Lists = new ListLogic(ApiKey);
-            this.ListSegments = new ListSegmentLogic(ApiKey);
-            this.Members = new MemberLogic(ApiKey);
-            this.MergeFields = new MergeFieldLogic(ApiKey);
-            this.Messages = new MessageLogic(ApiKey);
-            this.Notes = new NoteLogic(ApiKey);
-            this.Reports = new ReportLogic(ApiKey);
-            this.TemplateFolders = new TemplateFolderLogic(ApiKey);
-            this.Templates = new TemplateLogic(ApiKey);
-            this.WebHooks = new WebHookLogic(ApiKey);
+
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MailChimpManager"/> class.
+        /// </summary>
+        public MailChimpManager() : this(new MailChimpConfiguration())
+        {
+           
+        }
+
+        public MailChimpManager(IMailChimpConfiguration mailChimpConfiguration) : base(mailChimpConfiguration)
+        {
+            this.Activities = new ActivityLogic(_mailChimpConfiguration);
+            this.AbuseReports = new AbuseReportLogic(_mailChimpConfiguration);
+            this.Api = new ApiLogic(_mailChimpConfiguration);
+            this.Apps = new AuthorizedAppLogic(_mailChimpConfiguration);
+            this.AutomationEmails = new AutomationEmailLogic(_mailChimpConfiguration);
+            this.AutomationEmailQueues = new AutomationEmailQueueLogic(_mailChimpConfiguration);
+            this.Automations = new AutomationLogic(_mailChimpConfiguration);
+            this.AutomationSubscribers = new AutomationSubscriberLogic(_mailChimpConfiguration);
+            this.Batches = new BatchLogic(_mailChimpConfiguration);
+            this.Campaigns = new CampaignLogic(_mailChimpConfiguration);
+            this.CampaignFolders = new CampaignFolderLogic(_mailChimpConfiguration);
+            this.Clients = new ClientLogic(_mailChimpConfiguration);
+            this.Content = new ContentLogic(_mailChimpConfiguration);
+            this.Conversations = new ConversationLogic(_mailChimpConfiguration);
+            this.ECommerceStores = new ECommerceLogic(_mailChimpConfiguration);
+            this.Feedback = new FeedBackLogic(_mailChimpConfiguration);
+            this.FileManagerFiles = new FileManagerFileLogic(_mailChimpConfiguration);
+            this.FileManagerFolders = new FileManagerFolderLogic(_mailChimpConfiguration);
+            this.GrowthHistories = new GrowthHistoryLogic(_mailChimpConfiguration);
+            this.InterestCategories = new InterestCategoryLogic(_mailChimpConfiguration);
+            this.Interests = new InterestLogic(_mailChimpConfiguration);
+            this.Lists = new ListLogic(_mailChimpConfiguration);
+            this.ListSegments = new ListSegmentLogic(_mailChimpConfiguration);
+            this.Members = new MemberLogic(_mailChimpConfiguration);
+            this.MergeFields = new MergeFieldLogic(_mailChimpConfiguration);
+            this.Messages = new MessageLogic(_mailChimpConfiguration);
+            this.Notes = new NoteLogic(_mailChimpConfiguration);
+            this.Reports = new ReportLogic(_mailChimpConfiguration);
+            this.TemplateFolders = new TemplateFolderLogic(_mailChimpConfiguration);
+            this.Templates = new TemplateLogic(_mailChimpConfiguration);
+            this.WebHooks = new WebHookLogic(_mailChimpConfiguration);
         }
 
         /// <summary>
@@ -251,5 +245,9 @@ namespace MailChimp.Net
         /// </summary>
         public IWebHookLogic WebHooks { get; }
 
+        public int Limit
+        {
+            get; private set;
+        }
     }
 }

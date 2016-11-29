@@ -18,17 +18,12 @@ namespace MailChimp.Net.Logic
 	/// </summary>
 	internal class BatchLogic : BaseLogic, IBatchLogic
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="Logic.BatchLogic"/> class.
-		/// </summary>
-		/// <param name="apiKey">
-		/// The api key.
-		/// </param>
-		public BatchLogic(string apiKey) : base(apiKey)
-		{
-		}
+        public BatchLogic(IMailChimpConfiguration mailChimpConfiguration)
+            : base(mailChimpConfiguration)
+        {
+        }
 
-		public async Task<Batch> AddAsync(BatchRequest request = null)
+        public async Task<Batch> AddAsync(BatchRequest request = null)
 		{
 			using (var client = this.CreateMailClient("batches"))
 			{
@@ -43,20 +38,16 @@ namespace MailChimp.Net.Logic
 
 		public async Task<IEnumerable<Batch>> GetAllAsync(QueryableBaseRequest request = null)
 		{
-			using (var client = this.CreateMailClient("batches"))
-			{
-				var response =
-					await
-						client.GetAsync(request?.ToQueryString() ?? string.Empty)
-							.ConfigureAwait(false);
-				await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-				var batchResponse = await response.Content.ReadAsAsync<BatchResponse>().ConfigureAwait(false);
-				return batchResponse.Batches;
-			}
+			return (await this.GetResponseAsync(request).ConfigureAwait(false))?.Batches;
 		}
 
 		public async Task<BatchResponse> GetResponseAsync(QueryableBaseRequest request = null)
 		{
+			request = new QueryableBaseRequest
+			{
+				Limit = base._limit
+			};
+
 			using (var client = this.CreateMailClient("batches"))
 			{
 				var response =
@@ -69,14 +60,14 @@ namespace MailChimp.Net.Logic
 			}
 		}
 
-	    public async Task DeleteAsync(string batchId)
-	    {
-            using (var client = this.CreateMailClient("batches/"))
-            {
-                var response = await client.DeleteAsync($"{batchId}").ConfigureAwait(false);
-                await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
-            }
-        }
+		public async Task DeleteAsync(string batchId)
+		{
+			using (var client = this.CreateMailClient("batches/"))
+			{
+				var response = await client.DeleteAsync($"{batchId}").ConfigureAwait(false);
+				await response.EnsureSuccessMailChimpAsync().ConfigureAwait(false);
+			}
+		}
 
 
 		public async Task<Batch> GetBatchStatus(string batchId)
